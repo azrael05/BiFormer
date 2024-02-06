@@ -3,7 +3,7 @@
 if [ $1 == 'export' ]; then
     conda env export --no-builds | grep -v "prefix" > environment.yaml
 elif [ $1 == 'create' ]; then
-    conda env create -f environment.yaml
+    conda env create --prefix "/kaggle/working/mysitepackages" -f environment.yaml
 elif [ $1 == 'update' ]; then
     conda env update --file environment.yaml --prune
 else
