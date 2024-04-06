@@ -134,7 +134,7 @@ class Block(nn.Module):
 
 
 class BiFormer(nn.Module):
-    def __init__(self, depth=[3, 4, 8, 3], in_chans=3, num_classes=1000, embed_dim=[64, 128, 320, 512],
+    def __init__(self, depth=[3, 4, 8, 3], in_chans=3, num_classes=2, embed_dim=[64, 128, 320, 512],
                  head_dim=64, qk_scale=None, representation_size=None,
                  drop_path_rate=0., drop_rate=0.,
                  use_checkpoint_stages=[],
