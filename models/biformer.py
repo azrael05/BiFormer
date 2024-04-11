@@ -196,7 +196,7 @@ class BiFormer(nn.Module):
             stem = checkpoint_wrapper(stem)
         self.downsample_layers.append(stem)
 
-        for i in range(3):
+        for i in range(len(embed_dim)-1):
             downsample_layer = nn.Sequential(
                 nn.Conv2d(embed_dim[i], embed_dim[i+1], kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
                 nn.BatchNorm2d(embed_dim[i+1])
@@ -212,7 +212,7 @@ class BiFormer(nn.Module):
         nheads= [dim // head_dim for dim in qk_dims]
         dp_rates=[x.item() for x in torch.linspace(0, drop_path_rate, sum(depth))] 
         cur = 0
-        for i in range(4):
+        for i in range(len(embed_dim)):
             stage = nn.Sequential(
                 *[Block(dim=embed_dim[i], drop_path=dp_rates[cur + j], 
                         layer_scale_init_value=layer_scale_init_value,
@@ -278,7 +278,7 @@ class BiFormer(nn.Module):
         self.head = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
-        for i in range(4):
+        for i in range(len(self.embed_dim)):
             x = self.downsample_layers[i](x) # res = (56, 28, 14, 7), wins = (64, 16, 4, 1)
             x = self.stages[i](x)
         x = self.norm(x)
