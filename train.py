@@ -9,7 +9,7 @@ from torchvision import transforms
 from models.biformer import BiFormer
 from my_dataset import MyDataSet
 #from model import swin_tiny_patch4_window7_224 as create_model
-from utils import read_split_data, read_data,train_one_epoch, evaluate
+from utils_copy import read_split_data, read_data,train_one_epoch, evaluate
 import timm
 import cv2
 import numpy as np
@@ -23,6 +23,11 @@ from torchvision.transforms import (CenterCrop,
                                     Resize,
                                     RandomAffine,
                                     ToTensor)
+# import sys
+# sys.path.insert(0,"E:\BiFormer")
+import pathlib   
+temp = pathlib.PosixPath   
+pathlib.PosixPath = pathlib.WindowsPath
 def rotate_crop(image):
     """Rotate and crop the image
     :param image: the image
@@ -127,12 +132,12 @@ def main(args):
     ]),
 }
 
-    train_dataset = MyDataSet(images_path=train_images_path,
-                              images_class=train_images_label,
+    train_dataset = MyDataSet(images_path=train_images_path[:10],
+                              images_class=train_images_label[:10],
                               transform=data_transform["train"])
 
-    val_dataset = MyDataSet(images_path=val_images_path,
-                            images_class=val_images_label,
+    val_dataset = MyDataSet(images_path=val_images_path[:10],
+                            images_class=val_images_label[:10],
                             transform=data_transform["val"])
 
     batch_size = args.batch_size
@@ -181,7 +186,7 @@ def main(args):
     ## Load the tiny weights from hugging face
     model_key = 'biformer_tiny_in1k'
     url = model_urls[model_key]
-    checkpoint = torch.hub.load_state_dict_from_url(url=url, map_location="cpu", file_name=f"{model_key}.pth")
+    checkpoint = torch.hub.load_state_dict_from_url(url=url, map_location="cpu", file_name="biformer_tiny_in1k.pth")
 
     for k in list(checkpoint["model"].keys()):
         if "head" in k:

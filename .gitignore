@@ -3,3 +3,5 @@ local*
 outputs*
 __pycache__
 .pyc
+/.env
+*.jpg
