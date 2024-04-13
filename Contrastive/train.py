@@ -390,7 +390,7 @@ def main():
 ]),}
     train_contrastive_transform = DuplicateSampleTransform(data_transform["train"])
     train_contrastive_transform_val = DuplicateSampleTransform(data_transform["val"])
-    train_images_path, train_images_label, val_images_path, val_images_label = read_data("E:\BiFormer\cifake")
+    train_images_path, train_images_label, val_images_path, val_images_label = read_data("/kaggle/working/cifake")
     # Zip the two lists together
     import random
     zipped_lists = list(zip(train_images_path[:10000], train_images_label[:10000]))
@@ -426,7 +426,7 @@ def main():
         shuffle=False,
         # num_workers=args.num_workers,
     )
-    train_images_path, train_images_label, val_images_path, val_images_label = read_data("E:\BiFormer\cifake")
+    train_images_path, train_images_label, val_images_path, val_images_label = read_data("/kaggle/working/cifake")
     train_dataset_norm = MyDataSet(images_path=train_images_path[:10],
                             images_class=train_images_label[:10],
                             transform=data_transform["train"])
