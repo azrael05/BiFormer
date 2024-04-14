@@ -277,16 +277,16 @@ class BiFormer(nn.Module):
                 param.requires_grad = False
 
     def forward_impl_encoder(self, x):
-        print("Type of x",type(x))
+   
         x = self.forward_features(x)
-        print("Type of x",type(x))
+
         x = x.flatten(2).mean(-1)
         return x
 
     def forward_constrative(self, x):
         # Implement from the encoder E to the projection network P
         x = self.forward_impl_encoder(x)
-        print("2nd step of fwd contrastive",type(x))
+     
         x = self.contrastive_hidden_layer(x)
         x = F.relu(x)
         x = self.contrastive_output_layer(x)
