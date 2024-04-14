@@ -3,6 +3,7 @@ import math
 import numpy as np
 import os
 import torch
+import gc
 
 from torch.backends import cudnn
 from torch import nn
@@ -160,7 +161,6 @@ def train_contrastive(model, train_loader, criterion, optimizer, writer, args):
 
             inputs, targets = inputs.to(args.device), targets.to(args.device)
             optimizer.zero_grad()
-            print(type(inputs))
             projections = model.forward_constrative(inputs)
             loss = criterion(projections, targets)
             loss.backward()
@@ -177,23 +177,27 @@ def train_contrastive(model, train_loader, criterion, optimizer, writer, args):
                 len(train_loader),
                 "Loss: %.3f " % (train_loss / (batch_idx + 1)),
             )
+            del inputs, targets
+        torch.cuda.empty_cache()
+        gc.collect()
 
         avg_loss = train_loss / (batch_idx + 1)
         # Only check every 10 epochs otherwise you will always save
-        if epoch % 10 == 0:
-            if (train_loss / (batch_idx + 1)) < best_loss:
-                print("Saving..")
-                state = {
-                    "net": model.state_dict(),
-                    "avg_loss": avg_loss,
-                    "epoch": epoch,
-                }
-                if not os.path.isdir("checkpoint"):
-                    os.mkdir("checkpoint")
-                torch.save(state, "./checkpoint/ckpt_contrastive.pth")
-                best_loss = avg_loss
+    
+        if (train_loss / (batch_idx + 1)) < best_loss:
+            print("Saving..")
+            state = {
+                "net": model.state_dict(),
+                "avg_loss": avg_loss,
+                "epoch": epoch,
+            }
+            if not os.path.isdir("checkpoint"):
+                os.mkdir("checkpoint")
+            torch.save(state, "./checkpoint/ckpt_contrastive.pth")
+            best_loss = avg_loss
 
         adjust_learning_rate(optimizer, epoch, mode="contrastive", args=args)
+    
 
 
 def train_cross_entropy(model, train_loader, test_loader, criterion, optimizer, writer, args):
@@ -530,9 +534,13 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
     criterion.to(args.device)
-
+    
+    torch.cuda.empty_cache()
+    gc.collect()
     args.best_acc = 0.0
     train_cross_entropy(model, train_loader_norm, test_loader_norm, criterion, optimizer, writer, args)
+    torch.cuda.empty_cache()
+    gc.collect()
     # else:
     #     optimizer = optim.SGD(
     #         model.parameters(),
