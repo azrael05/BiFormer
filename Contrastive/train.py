@@ -573,7 +573,7 @@ def inference(image_paths):
         param_routing=False, diff_routing=False, soft_routing=False,
         pre_norm=True,
         pe=None)
-    model.load_state_dict(torch.load(r'.\checkpoint\ckpt_cross_entropy.pth', map_location=torch.device("cpu"))["net"])
+    model.load_state_dict(torch.load(r'.\checkpoint\ckpt_contrastive.pth', map_location=torch.device("cpu"))["net"])
     img_size = 224
     data_transform = {
     ## Transformation to be applied on validation
@@ -589,17 +589,24 @@ def inference(image_paths):
     from pathlib import Path
     from tqdm import tqdm
     for image_path in tqdm(image_paths):
+        out_path = os.path.join("embeddings\\contrastive", image_path.split("\\")[-2],image_path.split("\\")[-1].replace(".jpg",".npy"))
+        if os.path.exists(out_path):
+            continue
         img = Image.open(Path(image_path))
         img = data_transform["val"](img)
-        pred = model(torch.unsqueeze(img, 0))
-        preds.append(np.argmax(pred[0].detach().numpy()))
-        acts.append(0 if "FAKE" in image_path else 1)
-    print(np.sum(np.array(preds)==np.array(acts))/len(image_paths))
-    from sklearn.metrics import accuracy_score
-    print(accuracy_score(acts, preds))
-
+        pred = model(torch.unsqueeze(img, 0)).detach().numpy()
+        np.save(out_path, pred)
+        # preds.append(np.argmax(pred[0].detach().numpy()))
+        # acts.append(0 if "FAKE" in image_path else 1)
+    # print(np.sum(np.array(preds)==np.array(acts))/len(image_paths))
+    # from sklearn.metrics import accuracy_score
+    # print(accuracy_score(acts, preds))
+    del model
 
 if __name__ == "__main__":
-    from glob import glob
-    image_paths = glob(r"..\cifake\val\**\**")
-    inference(image_paths)
+    main()
+    # from glob import glob
+    # image_paths = glob("..\\cifake\\val\\FAKE\\**")[:1000]
+    # image_paths_2 = glob("..\\cifake\\val\\REAL\\**")[:1000]
+    # inference(image_paths)
+    # inference(image_paths_2)

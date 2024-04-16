@@ -299,6 +299,10 @@ class BiFormer(nn.Module):
     def forward(self, x):
         # Implement from the encoder to the decoder network
         x = self.forward_impl_encoder(x)
+        # x = self.contrastive_hidden_layer(x)
+        # x = F.relu(x)
+        # x = self.contrastive_output_layer(x)
+        return x
         x = self.head(x)
         x = F.normalize(x, dim=1)
         sigmoid_layer = torch.nn.Sigmoid()
