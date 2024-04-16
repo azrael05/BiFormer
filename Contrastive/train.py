@@ -408,12 +408,12 @@ def main():
     # Unzip the shuffled list
     val_images_path, val_images_label = zip(*zipped_lists)
     
-    train_dataset = MyDataSet(images_path=train_images_path[:10000],
-                            images_class=train_images_label[:10000],
+    train_dataset = MyDataSet(images_path=train_images_path,
+                            images_class=train_images_label,
                             transform=train_contrastive_transform)
 
-    val_dataset = MyDataSet(images_path=val_images_path[:10000],
-                            images_class=val_images_label[:10000],
+    val_dataset = MyDataSet(images_path=val_images_path,
+                            images_class=val_images_label,
                             transform=train_contrastive_transform_val)
     # train_set = datasets.CIFAR10(root="~/data", train=True, download=True, transform=transform_train)
     train_loader = torch.utils.data.DataLoader(
@@ -431,12 +431,12 @@ def main():
         # num_workers=args.num_workers,
     )
     train_images_path, train_images_label, val_images_path, val_images_label = read_data("/kaggle/working/cifake")
-    train_dataset_norm = MyDataSet(images_path=train_images_path[:10],
-                            images_class=train_images_label[:10],
+    train_dataset_norm = MyDataSet(images_path=train_images_path,
+                            images_class=train_images_label,
                             transform=data_transform["train"])
 
-    val_dataset_norm = MyDataSet(images_path=val_images_path[:10],
-                            images_class=val_images_label[:10],
+    val_dataset_norm = MyDataSet(images_path=val_images_path,
+                            images_class=val_images_label,
                             transform=data_transform["val"])
     # train_set = datasets.CIFAR10(root="~/data", train=True, download=True, transform=transform_train)
     train_loader_norm = torch.utils.data.DataLoader(
@@ -456,18 +456,18 @@ def main():
     num_classes = 2
 
     model = BiFormer(
-        depth=[2, 2, 8, 2],
-        embed_dim=[64, 128, 256, 512], mlp_ratios=[3, 3, 3, 3],
-        num_classes=2,
+        depth=[2, 2, 8],
+        embed_dim=[64, 128, 256], mlp_ratios=[3, 3, 3],
         #------------------------------
         n_win=7,
         kv_downsample_mode='identity',
-        kv_per_wins=[-1, -1, -1, -1],
-        topks=[1, 4, 16, -2],
+        kv_per_wins=[-1, -1, -1],
+#         topks=[1, 4, 16, -2],
+        topks = [1, -1,-2],
         side_dwconv=5,
         before_attn_dwconv=3,
         layer_scale_init_value=-1,
-        qk_dims=[64, 128, 256, 512],
+        qk_dims=[64, 128, 512],
         head_dim=32,
         param_routing=False, diff_routing=False, soft_routing=False,
         pre_norm=True,
@@ -554,6 +554,52 @@ def main():
     #     args.best_acc = 0.0
     #     train_cross_entropy(model, train_loader, test_loader, criterion, optimizer, writer, args)
 
+def inference(image_paths):
+    from PIL import Image 
+    model  = BiFormer(
+        depth=[2, 2, 8, 2],
+        embed_dim=[64, 128, 256, 512], mlp_ratios=[3, 3, 3, 3],
+        num_classes=2,
+        #------------------------------
+        n_win=7,
+        kv_downsample_mode='identity',
+        kv_per_wins=[-1, -1, -1, -1],
+        topks=[1, 4, 16, -2],
+        side_dwconv=5,
+        before_attn_dwconv=3,
+        layer_scale_init_value=-1,
+        qk_dims=[64, 128, 256, 512],
+        head_dim=32,
+        param_routing=False, diff_routing=False, soft_routing=False,
+        pre_norm=True,
+        pe=None)
+    model.load_state_dict(torch.load(r'.\checkpoint\ckpt_cross_entropy.pth', map_location=torch.device("cpu"))["net"])
+    img_size = 224
+    data_transform = {
+    ## Transformation to be applied on validation
+    "val": transforms.Compose([
+    transforms.Resize(img_size),
+    transforms.Lambda(lambda img: transforms.functional.equalize(img)),
+    transforms.ToTensor(),
+        transforms.Resize(img_size),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ])}
+    acts = []
+    preds = []
+    from pathlib import Path
+    from tqdm import tqdm
+    for image_path in tqdm(image_paths):
+        img = Image.open(Path(image_path))
+        img = data_transform["val"](img)
+        pred = model(torch.unsqueeze(img, 0))
+        preds.append(np.argmax(pred[0].detach().numpy()))
+        acts.append(0 if "FAKE" in image_path else 1)
+    print(np.sum(np.array(preds)==np.array(acts))/len(image_paths))
+    from sklearn.metrics import accuracy_score
+    print(accuracy_score(acts, preds))
+
 
 if __name__ == "__main__":
-    main()
+    from glob import glob
+    image_paths = glob(r"..\cifake\val\**\**")
+    inference(image_paths)

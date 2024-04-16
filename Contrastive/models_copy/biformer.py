@@ -299,7 +299,11 @@ class BiFormer(nn.Module):
     def forward(self, x):
         # Implement from the encoder to the decoder network
         x = self.forward_impl_encoder(x)
-        return self.head(x)
+        x = self.head(x)
+        x = F.normalize(x, dim=1)
+        sigmoid_layer = torch.nn.Sigmoid()
+        x = sigmoid_layer(x)
+        return x
 
     @torch.jit.ignore
     def no_weight_decay(self):
