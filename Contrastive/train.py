@@ -605,8 +605,13 @@ def inference(image_paths):
 
 if __name__ == "__main__":
     main()
+    # import shutil
+    # shutil.rmtree(r"embeddings\contrastive")
+    # os.makedirs(r"embeddings\contrastive\REAL")
+    # os.makedirs(r"embeddings\contrastive\FAKE")
+    
     # from glob import glob
-    # image_paths = glob("..\\cifake\\val\\FAKE\\**")[:1000]
-    # image_paths_2 = glob("..\\cifake\\val\\REAL\\**")[:1000]
+    # image_paths = glob("..\\cifake\\val\\FAKE\\**")[:100]
+    # image_paths_2 = glob("..\\cifake\\val\\REAL\\**")[:100]
     # inference(image_paths)
     # inference(image_paths_2)

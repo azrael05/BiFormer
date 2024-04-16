@@ -302,11 +302,11 @@ class BiFormer(nn.Module):
         # x = self.contrastive_hidden_layer(x)
         # x = F.relu(x)
         # x = self.contrastive_output_layer(x)
-        return x
+        # return x
         x = self.head(x)
-        x = F.normalize(x, dim=1)
-        sigmoid_layer = torch.nn.Sigmoid()
-        x = sigmoid_layer(x)
+        # x = F.normalize(x, dim=1)
+        # sigmoid_layer = torch.nn.Sigmoid()
+        # x = sigmoid_layer(x)
         return x
 
     @torch.jit.ignore

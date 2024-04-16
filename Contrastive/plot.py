@@ -9,14 +9,14 @@ FAKE_FOLDER = r"embeddings\contrastive\FAKE"
 
 # Load embeddings from REAL folder
 real_embeddings = []
-for file in os.listdir(REAL_FOLDER)[:100]:
+for file in os.listdir(REAL_FOLDER):
     if file.endswith(".npy"):
         embedding = np.load(os.path.join(REAL_FOLDER, file))
         real_embeddings.append(embedding.reshape(-1))
 
 # Load embeddings from FAKE folder
 fake_embeddings = []
-for file in os.listdir(FAKE_FOLDER)[:100]:
+for file in os.listdir(FAKE_FOLDER):
     if file.endswith(".npy"):
         embedding = np.load(os.path.join(FAKE_FOLDER, file))
         fake_embeddings.append(embedding.reshape(-1))
