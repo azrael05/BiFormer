@@ -287,9 +287,9 @@ class BiFormer(nn.Module):
         # Implement from the encoder E to the projection network P
         x = self.forward_impl_encoder(x)
      
-        x = self.contrastive_hidden_layer(x)
-        x = F.relu(x)
-        x = self.contrastive_output_layer(x)
+        # x = self.contrastive_hidden_layer(x)
+        # x = F.relu(x)
+        # x = self.contrastive_output_layer(x)
 
         # Normalize to unit hypersphere
         x = F.normalize(x, dim=1)
