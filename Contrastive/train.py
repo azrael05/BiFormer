@@ -137,7 +137,7 @@ def adjust_learning_rate(optimizer, epoch, mode, args):
         param_group["lr"] = lr
 
 
-def train_contrastive(model, train_loader, criterion, optimizer, writer, args):
+def     train_contrastive(model, train_loader, criterion, optimizer, writer, args):
     """
 
     :param model: torch.nn.Module Model
@@ -574,7 +574,7 @@ def inference(image_paths):
         param_routing=False, diff_routing=False, soft_routing=False,
         pre_norm=True,
         pe=None)
-    model.load_state_dict(torch.load(r'..\weights\k_3\best_model.pth', map_location=torch.device("cpu")))
+    model.load_state_dict(torch.load(r'checkpoint\ckpt_contrastive.pth', map_location=torch.device("cpu")))
     img_size = 224
     data_transform = {
     ## Transformation to be applied on validation
@@ -625,14 +625,14 @@ def inference(image_paths):
     del model
 
 if __name__ == "__main__":
-    # main()
-    import shutil
-    # shutil.rmtree(r"embeddings\contrastive")
-    # os.makedirs(r"embeddings\contrastive\REAL")
-    # os.makedirs(r"embeddings\contrastive\FAKE")
+    main()
+    # import shutil
+    # # shutil.rmtree(r"embeddings\contrastive")
+    # # os.makedirs(r"embeddings\contrastive\REAL")
+    # # os.makedirs(r"embeddings\contrastive\FAKE")
     
-    from glob import glob
-    image_paths = glob("..\\cifake\\val\\**\\**")[:100]
-    # image_paths_2 = glob("..\\cifake\\val\\REAL\\**")[:100]
-    inference(image_paths)
+    # from glob import glob
+    # image_paths = glob("..\\cifake\\val\\**\\**")[:100]
+    # # image_paths_2 = glob("..\\cifake\\val\\REAL\\**")[:100]
+    # inference(image_paths)
     # inference(image_paths_2)
