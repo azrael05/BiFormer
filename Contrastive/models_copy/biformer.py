@@ -158,7 +158,7 @@ class BiFormer(nn.Module):
                  mlp_ratios=[4, 4, 4, 4],
                  param_attention='qkvo',
                  mlp_dwconv=False,
-                 contrastive_dimension=64):
+                 contrastive_dimension=512):
         """
         Args:
             depth (list): depth of each stage

@@ -9,7 +9,7 @@ from torchvision import transforms
 from models.biformer import BiFormer
 from my_dataset import MyDataSet
 #from model import swin_tiny_patch4_window7_224 as create_model
-from utils_copy import read_split_data, read_data,train_one_epoch, evaluate
+from utils import read_split_data, read_data,train_one_epoch, evaluate
 import timm
 import cv2
 import numpy as np

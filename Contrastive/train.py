@@ -16,8 +16,9 @@ from loss.spc import SupervisedContrastiveLoss
 from data_augmentation.auto_augment import AutoAugment
 from data_augmentation.duplicate_sample_transform import DuplicateSampleTransform
 
-from models.resnet_contrastive import get_resnet_contrastive
+# from models.resnet_contrastive import get_resnet_contrastive
 from models_copy.biformer import BiFormer
+# from models.biformer import BiFormer
 import cv2
 import imutils
 from PIL import Image
@@ -557,61 +558,81 @@ def main():
 def inference(image_paths):
     from PIL import Image 
     model  = BiFormer(
-        depth=[2, 2, 8, 2],
-        embed_dim=[64, 128, 256, 512], mlp_ratios=[3, 3, 3, 3],
-        num_classes=2,
+         depth=[2, 2, 8],
+        embed_dim=[64, 128, 256], mlp_ratios=[3, 3, 3],
         #------------------------------
         n_win=7,
         kv_downsample_mode='identity',
-        kv_per_wins=[-1, -1, -1, -1],
-        topks=[1, 4, 16, -2],
+        kv_per_wins=[-1, -1, -1],
+#         topks=[1, 4, 16, -2],
+        topks = [1, -1,-2],
         side_dwconv=5,
         before_attn_dwconv=3,
         layer_scale_init_value=-1,
-        qk_dims=[64, 128, 256, 512],
+        qk_dims=[64, 128, 512],
         head_dim=32,
         param_routing=False, diff_routing=False, soft_routing=False,
         pre_norm=True,
         pe=None)
-    model.load_state_dict(torch.load(r'.\checkpoint\ckpt_contrastive.pth', map_location=torch.device("cpu"))["net"])
+    model.load_state_dict(torch.load(r'..\weights\k_3\best_model.pth', map_location=torch.device("cpu")))
     img_size = 224
     data_transform = {
     ## Transformation to be applied on validation
     "val": transforms.Compose([
-    transforms.Resize(img_size),
-    transforms.Lambda(lambda img: transforms.functional.equalize(img)),
-    transforms.ToTensor(),
-        transforms.Resize(img_size),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ])}
+        # transforms.Lambda(rotate_crop),  # Apply rotate_crop before other transformations
+        # transforms.Lambda(rotate_crop),
+        transforms.Lambda(lambda img: transforms.functional.equalize(img)),
+        transforms.ToTensor(),
+         transforms.Resize(img_size),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]),
+    }
+    from my_dataset import MyDataSet
+    from train import evaluate
     acts = []
+    for image_path in image_paths:
+        acts.append(0 if "FAKE" in image_path else 1)
+    val_dataset = MyDataSet(images_path=image_paths,
+                            images_class=acts,
+                            transform=data_transform["val"])
+    val_loader = torch.utils.data.DataLoader(val_dataset,
+                                             batch_size=8,
+                                             shuffle=False,
+                                             pin_memory=True,
+                                             collate_fn=val_dataset.collate_fn)
+    # val_loss, val_acc = evaluate(model=model,
+    #                                  data_loader=val_loader,
+    #                                  device="cpu",
+    #                                  epoch=-1)
+    # print(val_acc, val_loss)
     preds = []
-    from pathlib import Path
+    # from pathlib import Path
     from tqdm import tqdm
-    for image_path in tqdm(image_paths):
-        out_path = os.path.join("embeddings\\contrastive", image_path.split("\\")[-2],image_path.split("\\")[-1].replace(".jpg",".npy"))
-        if os.path.exists(out_path):
-            continue
-        img = Image.open(Path(image_path))
-        img = data_transform["val"](img)
-        pred = model(torch.unsqueeze(img, 0)).detach().numpy()
-        np.save(out_path, pred)
-        # preds.append(np.argmax(pred[0].detach().numpy()))
-        # acts.append(0 if "FAKE" in image_path else 1)
+    for step, data in tqdm(enumerate(val_loader)):
+        images, labels = data
+
+        pred = model(images.to("cpu"))
+        pred_classes = torch.max(pred, dim=1)[1]
+        for label in pred_classes:
+            preds.append(label)
+        # accu_num += torch.eq(pred_classes, labels.to("cpu")).sum()
+
     # print(np.sum(np.array(preds)==np.array(acts))/len(image_paths))
-    # from sklearn.metrics import accuracy_score
-    # print(accuracy_score(acts, preds))
+    from sklearn.metrics import accuracy_score, confusion_matrix
+    print(accuracy_score(acts, preds))
+    print(confusion_matrix(acts, preds))
+    
     del model
 
 if __name__ == "__main__":
-    main()
-    # import shutil
+    # main()
+    import shutil
     # shutil.rmtree(r"embeddings\contrastive")
     # os.makedirs(r"embeddings\contrastive\REAL")
     # os.makedirs(r"embeddings\contrastive\FAKE")
     
-    # from glob import glob
-    # image_paths = glob("..\\cifake\\val\\FAKE\\**")[:100]
+    from glob import glob
+    image_paths = glob("..\\cifake\\val\\**\\**")[:100]
     # image_paths_2 = glob("..\\cifake\\val\\REAL\\**")[:100]
-    # inference(image_paths)
+    inference(image_paths)
     # inference(image_paths_2)
