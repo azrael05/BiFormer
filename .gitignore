@@ -3,3 +3,8 @@ local*
 outputs*
 __pycache__
 .pyc
+/.env
+/cifake
+/Contrastive/logs
+/embeddings
+*.pth
