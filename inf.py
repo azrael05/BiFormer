@@ -83,9 +83,9 @@ def inference(image_paths):
 
     ## Transformation to be applied on validation
     "val": transforms.Compose([
-        # transforms.Lambda(rotate_crop),  # Apply rotate_crop before other transformations
+        transforms.Lambda(rotate_crop),  # Apply rotate_crop before other transformations
         transforms.Resize(img_size),
-        # transforms.Lambda(rotate_crop),
+        transforms.Lambda(rotate_crop),
         transforms.Lambda(lambda img: transforms.functional.equalize(img)),
         transforms.ToTensor(),
          transforms.Resize(img_size),

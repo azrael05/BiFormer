@@ -360,16 +360,8 @@ def main():
     # import sys
     # sys.path.insert(0,"E:\BiFormer")
     from my_dataset import MyDataSet
-    from utils_copy import read_data
-    # from train_copy import rotate_crop
-    from torchvision.transforms import (CenterCrop,
-                                Compose,
-                                Normalize,
-                                RandomHorizontalFlip,
-                                RandomResizedCrop,
-                                Resize,
-                                RandomAffine,
-                                ToTensor)
+    from utils import read_data
+    from torchvision.transforms import RandomAffine
     img_size = 224
     shear_degrees = 10
     data_transform = {

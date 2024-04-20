@@ -138,7 +138,7 @@ class BiFormer(nn.Module):
                  head_dim=64, qk_scale=None, representation_size=None,
                  drop_path_rate=0., drop_rate=0.,
                  use_checkpoint_stages=[],
-                 ######## 
+                 ########   
                  n_win=7,
                  kv_downsample_mode='ada_avgpool',
                  kv_per_wins=[2, 2, -1, -1],

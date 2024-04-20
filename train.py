@@ -15,14 +15,7 @@ import cv2
 import numpy as np
 import imutils
 from PIL import Image
-from torchvision.transforms import (CenterCrop,
-                                    Compose,
-                                    Normalize,
-                                    RandomHorizontalFlip,
-                                    RandomResizedCrop,
-                                    Resize,
-                                    RandomAffine,
-                                    ToTensor)
+from torchvision.transforms import RandomAffine
 # import sys
 # sys.path.insert(0,"E:\BiFormer")
 import pathlib   
@@ -38,16 +31,14 @@ def rotate_crop(image):
     image = np.array(image)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (7, 7), 0)
-    ratio = image.shape[0] / 300.0
-    orig = image.copy()
     
     # convert the image to grayscale, blur it, and find edges
    
-    (T, threshInv) = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY_INV)
+    (_, threshInv) = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY_INV)
     masked = cv2.bitwise_and(image, image, mask=threshInv)
     blurred = cv2.GaussianBlur(threshInv, (7, 7), 0)
     edged = cv2.Canny(blurred, 30, 200)
-    p1 = None# Adjust these values based on your points
+    p1 = None
     p2 = None
     edge_points = np.column_stack(np.where(edged == 255))
     for point in edge_points:

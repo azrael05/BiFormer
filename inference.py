@@ -71,24 +71,43 @@ def rotate_crop(image):
 
 def inference(image_paths):
     from PIL import Image 
-    model  = BiFormer(
-         depth=[2, 2, 8],
-        embed_dim=[64, 128, 256], mlp_ratios=[3, 3, 3],
+#     model  = BiFormer(
+#          depth=[2, 2, 8],
+#         embed_dim=[64, 128, 256], mlp_ratios=[3, 3, 3],
+#         #------------------------------
+#         n_win=7,
+#         kv_downsample_mode='identity',
+#         kv_per_wins=[-1, -1, -1],
+# #         topks=[1, 4, 16, -2],
+#         topks = [1, -1,-2],
+#         side_dwconv=5,
+#         before_attn_dwconv=3,
+#         layer_scale_init_value=-1,
+#         qk_dims=[64, 128, 512],
+#         head_dim=32,
+#         param_routing=False, diff_routing=False, soft_routing=False,
+#         pre_norm=True,
+#         pe=None)
+    model = BiFormer(
+        depth=[2, 2, 8, 2],
+        embed_dim=[64, 128, 256, 512], mlp_ratios=[3, 3, 3, 3],
+        num_classes=2,
         #------------------------------
         n_win=7,
         kv_downsample_mode='identity',
-        kv_per_wins=[-1, -1, -1],
-#         topks=[1, 4, 16, -2],
-        topks = [1, -1,-2],
+        kv_per_wins=[-1, -1, -1, -1],
+        topks=[1, 4, 16, -2],
         side_dwconv=5,
         before_attn_dwconv=3,
         layer_scale_init_value=-1,
-        qk_dims=[64, 128, 512],
+        qk_dims=[64, 128, 256, 512],
         head_dim=32,
         param_routing=False, diff_routing=False, soft_routing=False,
         pre_norm=True,
-        pe=None)
-    model.load_state_dict(torch.load(r'weights\k_3\best_model.pth', map_location=torch.device("cpu")))
+        pe=None
+    #-------------------------------
+    )
+    model.load_state_dict(torch.load(r'weights\k_4\best_model.pth', map_location=torch.device("cpu")))
     img_size = 224
     shear_degrees = 10
     from torchvision. transforms import RandomAffine
@@ -124,15 +143,15 @@ def inference(image_paths):
                             images_class=acts,
                             transform=data_transform["val"])
     val_loader = torch.utils.data.DataLoader(val_dataset,
-                                             batch_size=8,
+                                             batch_size=1,
                                              shuffle=False,
                                              pin_memory=True,
                                              collate_fn=val_dataset.collate_fn)
-    # val_loss, val_acc = evaluate(model=model,
-    #                                  data_loader=val_loader,
-    #                                  device="cpu",
-    #                                  epoch=-1)
-    # print(val_acc, val_loss)
+    val_loss, val_acc = evaluate(model=model,
+                                     data_loader=val_loader,
+                                     device="cpu",
+                                     epoch=-1)
+    print(val_acc, val_loss)
     preds = []
     # from pathlib import Path
     from tqdm import tqdm
@@ -160,8 +179,8 @@ if __name__ == "__main__":
     # os.makedirs(r"embeddings\contrastive\FAKE")
     
     from glob import glob
-    image_paths = glob("cifake\\val\\**\\**")[:100]
-    # image_paths_2 = glob("cifake\\val\\REAL\\**")
-    # image_paths = image_paths + image_paths_2
+    image_paths = glob("cifake\\val\\FAKE\\**")
+    image_paths_2 = glob("cifake\\val\\REAL\\**")
+    image_paths = image_paths + image_paths_2
     inference(image_paths)
     # inference(image_paths_2)
